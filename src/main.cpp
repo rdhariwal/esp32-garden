@@ -20,7 +20,7 @@ const int PIN_LIGHT_SENSOR = 39;
 const int PIN_SOIL_TEMPERATURE = 34;
 
 struct VH400 soilMoisture;
-int soilTemp = 0;
+float soilTemp = 0;
 
 const int LED_BUILTIN = 2;
 
@@ -142,7 +142,9 @@ void setup() {
   Serial.begin(115200);
   pinMode(LED_BUILTIN, OUTPUT);
   pinMode(PIN_SOIL_MOISTURE, INPUT);
-  pinMode(soilTemp, INPUT);Serial.println();
+  pinMode(PIN_LIGHT_SENSOR, INPUT);
+  pinMode(PIN_SOIL_TEMPERATURE, INPUT);
+  Serial.println();
   Serial.println();
   Serial.print("Connecting to ");
   Serial.println(ssid);
@@ -160,14 +162,12 @@ void setup() {
   Serial.println(WiFi.localIP());
   
   server.begin();
-
 }
 
 void loop() {
   WiFiClient client = server.available();   // listen for incoming clients
 
   if (client) {                             // if you get a client,
-    Serial.println("New Client.");
     digitalWrite(LED_BUILTIN, HIGH);
     while (client.connected()) {            // loop while the client's connected
       if (client.available()) {             // if there's bytes to read from the client,
@@ -184,7 +184,7 @@ void loop() {
           client.println();
           soilMoisture = readVH400_wStats(PIN_SOIL_MOISTURE);
           soilTemp = (75.006 * analogRead(PIN_SOIL_TEMPERATURE)*(3.3 / 1024)) - 42; 
-          int light = analogRead(PIN_LIGHT_SENSOR);
+          float light = analogRead(PIN_LIGHT_SENSOR);
 
           //prometheus parsing needs a \n character between statistics
           client.print("moisture_VWC_sensor_reading " + String(soilMoisture.VWC) + "\n");
@@ -202,7 +202,6 @@ void loop() {
       }
     }
     client.stop();
-    Serial.println("Client Disconnected.");   
   }
 
   digitalWrite(LED_BUILTIN, LOW);
