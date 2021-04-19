@@ -6,6 +6,8 @@ Make the garden better by reducing toil, logging and detecting patterns.
 
 For this repo I used the [HiLetGo ESP32 board](https://www.amazon.com/gp/product/B0718T232Z) for its ability to connect to wifi and low power consumption.
 
+The ESP32 board acts as a passive listener, when ever it receives a http request on port 80 it responds with all the sensor data at that point of time. The board does not store any data and expects an external service to collect and collate the data. I chose to use prometheus server and grafana to visualize it.
+
 ## Reference
 
 ![Image of pin layout](/images/PIN_Diagram.jpg)
