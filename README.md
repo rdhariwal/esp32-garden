@@ -23,9 +23,8 @@ The ESP32 board acts as a passive listener, when ever it receives a http request
     
 2. Sensor Wiring
 
-
 Sensor | Pin | Other Pin Name
 ------ | --- | ------------- 
-Soil Moisture  Sensor (VH400) | Pin 36 | SVP
-Light Snesor | Pin 39 | SVN
-Temperature Sensor | Pin 34 | P34 
+[Soil Moisture  Sensor (VH400)](https://www.vegetronix.com/Products/VH400/) | Pin 36 | SVP
+[Light Snesor](https://www.vegetronix.com/Products/LT150/)) | Pin 39 | SVN
+[Soil Temperature Sensor](https://www.vegetronix.com/Products/THERM200/) | Pin 34 | P34 
