@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <credentials.h>
+#include "OTA.h"
 
 const char* ssid     = mySSID;
 const char* password = myPASSWORD;
@@ -82,7 +83,7 @@ struct VH400 readVH400_wStats(int analogPin, int nMeasurements = 100, int delayB
   for (int i = 0; i < nMeasurements; i++) { 
     // Read value and convert to voltage 
     int sensorDN = analogRead(analogPin);
-    double sensorVoltage = sensorDN*(3.3 / 1023.0);
+    double sensorVoltage = sensorDN/(1000);
         
     // Calculate VWC
     float VWC = 0.0;
@@ -137,6 +138,17 @@ struct VH400 readVH400_wStats(int analogPin, int nMeasurements = 100, int delayB
   return(result);
 }
 
+
+uint16_t avg(int Pin, int Delay, int count) {
+  uint16_t sum = 0.0;
+  for (int i = 0; i < count; i++)
+  {
+    sum = sum + analogRead(PIN_SOIL_TEMPERATURE);
+    delay(Delay);
+  }
+  return sum / count;
+}
+
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
@@ -162,9 +174,11 @@ void setup() {
   Serial.println(WiFi.localIP());
   
   server.begin();
+  setupOTA("test-board", mySSID, myPASSWORD);
 }
 
 void loop() {
+  uint16_t light, temp = 0;
   WiFiClient client = server.available();   // listen for incoming clients
 
   if (client) {                             // if you get a client,
@@ -183,8 +197,8 @@ void loop() {
           client.println("Content-type:text/html");
           client.println();
           soilMoisture = readVH400_wStats(PIN_SOIL_MOISTURE);
-          soilTemp = (75.006 * analogRead(PIN_SOIL_TEMPERATURE)*(3.3 / 1024)) - 42; 
-          float light = analogRead(PIN_LIGHT_SENSOR);
+          temp = avg(PIN_SOIL_TEMPERATURE, 0, 5); 
+          light = analogRead(PIN_LIGHT_SENSOR);
 
           //prometheus parsing needs a \n character between statistics
           client.print("moisture_VWC_sensor_reading " + String(soilMoisture.VWC) + "\n");
@@ -193,7 +207,7 @@ void loop() {
           client.print("moisture_analogValue_sd_sensor_reading " + String(soilMoisture.analogValue_sd) + "\n");
           client.print("moisture_voltage_sensor_reading " + String(soilMoisture.voltage) + "\n");
           client.print("moisture_voltage_sd_sensor_reading " + String(soilMoisture.voltage_sd) + "\n");
-          client.print("soil_temperature_sensor_reading " + String(soilTemp) + "\n");
+          client.print("soil_temperature_sensor_reading " + String(temp) + "\n");
           client.print("light_sensor_reading " + String(light) + "\n");
 
           // break out of the while loop:
@@ -205,4 +219,5 @@ void loop() {
   }
 
   digitalWrite(LED_BUILTIN, LOW);
+  ArduinoOTA.handle();
 }
